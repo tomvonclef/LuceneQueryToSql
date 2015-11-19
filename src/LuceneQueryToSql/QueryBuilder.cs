@@ -41,7 +41,8 @@ namespace LuceneQueryToSql
         {
             var parser = new QueryParser(LUCENE_VERSION, "{{COLUMN}}", ANALYZER)
             {
-                DefaultOperator = QueryParser.Operator.AND
+                DefaultOperator = QueryParser.Operator.AND,
+                LowercaseExpandedTerms = false
             };
 
             return Build(parser.Parse(luceneQuery.ToUpper()));
