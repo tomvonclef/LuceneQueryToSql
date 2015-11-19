@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuceneQueryToSql", "src\LuceneQueryToSql\LuceneQueryToSql.csproj", "{E6C31D1E-3469-41D7-BC71-016384019E17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuceneQueryToSql.Tests", "src\LuceneQueryToSql.Tests\LuceneQueryToSql.Tests.csproj", "{8C296962-61BD-4EAC-9AF6-71C4DC5C5458}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E6C31D1E-3469-41D7-BC71-016384019E17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6C31D1E-3469-41D7-BC71-016384019E17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6C31D1E-3469-41D7-BC71-016384019E17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6C31D1E-3469-41D7-BC71-016384019E17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C296962-61BD-4EAC-9AF6-71C4DC5C5458}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C296962-61BD-4EAC-9AF6-71C4DC5C5458}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C296962-61BD-4EAC-9AF6-71C4DC5C5458}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C296962-61BD-4EAC-9AF6-71C4DC5C5458}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
