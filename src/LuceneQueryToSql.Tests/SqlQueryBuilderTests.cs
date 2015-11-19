@@ -147,12 +147,13 @@ namespace LuceneQueryToSql.Tests
         {
             // Arrange
             var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlOutput = "({{COLUMN}} LIKE '%' + @field1 + '%') AND ({{COLUMN}} LIKE '%' + @field2 + '%')";
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("foo AND bar");
 
             // Assert
-            Assert.AreEqual("({{COLUMN}} LIKE '%' + @field1 + '%') AND ({{COLUMN}} LIKE '%' + @field2 + '%')", parameterizedSql.Sql);
+            Assert.AreEqual(sqlOutput, parameterizedSql.Sql);
         }
 
         [Test]
@@ -187,12 +188,14 @@ namespace LuceneQueryToSql.Tests
         {
             // Arrange
             var sqlQueryBuilder = new SqlQueryBuilder();
+            var luceneQuery = "\"5% of coders \\{\\{FOO\\}\\} are cod\\[ing\\] all_night_long\"";
+            var sqlOutput = "5[%] OF CODERS [{][{]FOO}} ARE COD[[]ING] ALL[_]NIGHT[_]LONG";
             
             // Act
-            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"5% of coders \\{\\{FOO\\}\\} are cod\\[ing\\] all_night_long\"");
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause(luceneQuery);
 
             // Assert
-            Assert.AreEqual("5[%] OF CODERS [{][{]FOO}} ARE COD[[]ING] ALL[_]NIGHT[_]LONG", parameterizedSql.UserInputVariables["field1"]);
+            Assert.AreEqual(sqlOutput, parameterizedSql.UserInputVariables["field1"]);
         }
     }
 }
