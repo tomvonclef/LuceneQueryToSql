@@ -51,6 +51,46 @@ namespace LuceneQueryToSql.Tests
             Assert.AreEqual(1, parameterizedSql.UserInputVariables.Count);
         }
 
+
+        [Test]
+        public void BuildWildcardQuery_ValidInput_ValidSql()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
+
+            // Assert
+            Assert.AreEqual("{{COLUMN}} LIKE '%' + @field1 + '%'", parameterizedSql.Sql);
+        }
+
+        [Test]
+        public void BuildWildcardQuery_ValidInput_ValidNumParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
+
+            // Assert
+            Assert.AreEqual(1, parameterizedSql.UserInputVariables.Count);
+        }
+
+        [Test]
+        public void BuildWildcardQuery_ValidInput_ValidParameter()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
+
+            // Assert
+            Assert.AreEqual("AB_CD%", parameterizedSql.UserInputVariables["field1"]);
+        }
+
         [Test]
         public void BuildTermQuery_ValidInput_ValidParameter()
         {
