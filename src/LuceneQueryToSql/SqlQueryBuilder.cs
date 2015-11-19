@@ -65,9 +65,15 @@ namespace LuceneQueryToSql
         {
             string returnVal = termText;
 
+            // This replacement needs to be first.
+            returnVal = returnVal.Replace("[", "[[]");
+
             returnVal = returnVal.Replace("%", "[%]");
             returnVal = returnVal.Replace("_", "[_]");
-            returnVal = returnVal.Replace("[", "[[]");
+
+            // This is only needed so I can use "{{COLUMN}}" as text to be replaced perfectly safely.
+            // I.E. if anyone uses "{{COLUMN}}" as a search term, it will still work.
+            returnVal = returnVal.Replace("{", "[{]");
 
             return returnVal;
         }

@@ -141,5 +141,58 @@ namespace LuceneQueryToSql.Tests
             // Assert
             Assert.AreEqual("FOO", parameterizedSql.UserInputVariables["field1"]);
         }
+
+        [Test]
+        public void BuildBooleanQuery_TwoValidInputs_ValidSql()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("foo AND bar");
+
+            // Assert
+            Assert.AreEqual("({{COLUMN}} LIKE '%' + @field1 + '%') AND ({{COLUMN}} LIKE '%' + @field2 + '%')", parameterizedSql.Sql);
+        }
+
+        [Test]
+        public void BuildBooleanQuery_TwoValidInputs_ValidNumParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("foo AND bar");
+
+            // Assert
+            Assert.AreEqual(2, parameterizedSql.UserInputVariables.Count);
+        }
+
+        [Test]
+        public void BuildBooleanQuery_TwoValidInputs_ValidParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("foo AND bar");
+
+            // Assert
+            Assert.AreEqual("FOO", parameterizedSql.UserInputVariables["field1"]);
+            Assert.AreEqual("BAR", parameterizedSql.UserInputVariables["field2"]);
+        }
+
+        [Test]
+        public void BuildQuery_SqlWildcardInput_EscapedOutput()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"5% of coders \\{\\{FOO\\}\\} are cod\\[ing\\] all_night_long\"");
+
+            // Assert
+            Assert.AreEqual("5[%] OF CODERS [{][{]FOO}} ARE COD[[]ING] ALL[_]NIGHT[_]LONG", parameterizedSql.UserInputVariables["field1"]);
+        }
     }
 }
