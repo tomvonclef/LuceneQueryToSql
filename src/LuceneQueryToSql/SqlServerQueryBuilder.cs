@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 namespace LuceneQueryToSql
 {
-    public class SqlQueryBuilder: QueryBuilder
+    public class SqlServerQueryBuilder: QueryBuilder
     {
         private const string FieldPlaceholder = "{{COLUMN}}";
 
@@ -57,7 +57,7 @@ namespace LuceneQueryToSql
 
         protected override ParameterizedSql BuildQuery(TermRangeQuery termRangeQuery)
         {
-            // Not handling the TermRangeQuery.
+            // Not handling the TermRangeQuery. Discarding the search term.
             return null;
         }
 

@@ -23,13 +23,13 @@ using NUnit.Framework;
 namespace LuceneQueryToSql.Tests
 {
     [TestFixture]
-    public class SqlQueryBuilderTests
+    public class SqlServerQueryBuilderTests
     {
         [Test]
         public void BuildTermQuery_ValidInput_ValidSql()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc");
@@ -42,7 +42,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildTermQuery_ValidInput_ValidNumParameters()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc");
@@ -51,12 +51,103 @@ namespace LuceneQueryToSql.Tests
             Assert.AreEqual(1, parameterizedSql.UserInputVariables.Count);
         }
 
+        [Test]
+        public void BuildTermQuery_ValidInput_ValidParameter()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc");
+
+            // Assert
+            Assert.AreEqual("ABC", parameterizedSql.UserInputVariables["field1"]);
+        }
+
+        [Test]
+        public void BuildPrefixQuery_ValidInput_ValidSql()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc*");
+
+            // Assert
+            Assert.AreEqual("{{COLUMN}} LIKE '%' + @field1 + '%'", parameterizedSql.Sql);
+        }
+
+        [Test]
+        public void BuildPrefixQuery_ValidInput_ValidNumParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc*");
+
+            // Assert
+            Assert.AreEqual(1, parameterizedSql.UserInputVariables.Count);
+        }
+
+        [Test]
+        public void BuildPrefixQuery_ValidInput_ValidParameter()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc*");
+
+            // Assert
+            Assert.AreEqual("ABC%", parameterizedSql.UserInputVariables["field1"]);
+        }
+
+
+        [Test]
+        public void BuildTermRangeQuery_ValidInput_ValidSql()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("{a TO B}");
+
+            // Assert
+            Assert.AreEqual(null, parameterizedSql);
+        }
+
+        [Test]
+        public void BuildTermRangeQuery_ValidInput_ValidNumParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("{a TO B}");
+
+            // Assert
+            Assert.AreEqual(null, parameterizedSql);
+        }
+
+        [Test]
+        public void BuildTermRangeQuery_ValidInput_ValidParameter()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("{a TO B}");
+
+            // Assert
+            Assert.AreEqual(null, parameterizedSql);
+        }
 
         [Test]
         public void BuildWildcardQuery_ValidInput_ValidSql()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
@@ -69,7 +160,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildWildcardQuery_ValidInput_ValidNumParameters()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
@@ -79,10 +170,49 @@ namespace LuceneQueryToSql.Tests
         }
 
         [Test]
+        public void BuildWildcardPhraseQuery_ValidInput_ValidSql()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"Ab?Cd* dog\"");
+
+            // Assert
+            Assert.AreEqual("{{COLUMN}} LIKE '%' + @field1 + '%'", parameterizedSql.Sql);
+        }
+
+        [Test]
+        public void BuildWildcardPhraseQuery_ValidInput_ValidNumParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"Ab?Cd* dog\"");
+
+            // Assert
+            Assert.AreEqual(1, parameterizedSql.UserInputVariables.Count);
+        }
+
+        [Test]
+        public void BuildWildcardPhraseQuery_ValidInput_ValidParameter()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"Ab?Cd* dog\"");
+
+            // Assert
+            Assert.AreEqual("AB_CD% DOG", parameterizedSql.UserInputVariables["field1"]);
+        }
+
+        [Test]
         public void BuildWildcardQuery_ValidInput_ValidParameter()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
@@ -92,23 +222,49 @@ namespace LuceneQueryToSql.Tests
         }
 
         [Test]
-        public void BuildTermQuery_ValidInput_ValidParameter()
+        public void BuildFuzzyQuery_ValidInput_ValidSql()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
-            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc");
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Able~");
 
             // Assert
-            Assert.AreEqual("ABC", parameterizedSql.UserInputVariables["field1"]);
+            Assert.AreEqual("{{COLUMN}} LIKE '%' + @field1 + '%'", parameterizedSql.Sql);
+        }
+
+        [Test]
+        public void BuildFuzzyQuery_ValidInput_ValidNumParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Able~");
+
+            // Assert
+            Assert.AreEqual(1, parameterizedSql.UserInputVariables.Count);
+        }
+
+        [Test]
+        public void BuildFuzzyQuery_ValidInput_ValidParameter()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Able~");
+
+            // Assert
+            Assert.AreEqual("ABLE", parameterizedSql.UserInputVariables["field1"]);
         }
 
         [Test]
         public void BuildPhraseQuery_ValidInput_ValidSql()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"abc def\"");
@@ -121,7 +277,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildPhraseQuery_ValidInput_ValidNumParameters()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"abc def\"");
@@ -134,7 +290,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildPhraseQuery_OneValidInput_ValidParameter()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"abc def\"");
@@ -147,20 +303,20 @@ namespace LuceneQueryToSql.Tests
         public void BuildBooleanQuery_OneValidInput_ValidSql()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("+foo");
 
             // Assert
-            Assert.AreEqual("{{COLUMN}} LIKE '%' + @field1 + '%'", parameterizedSql.Sql);
+            Assert.AreEqual("(({{COLUMN}} LIKE '%' + @field1 + '%'))", parameterizedSql.Sql);
         }
 
         [Test]
         public void BuildBooleanQuery_OneValidInput_ValidNumParameters()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("+foo");
@@ -173,7 +329,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildBooleanQuery_OneValidInput_ValidParameter()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("+foo");
@@ -186,8 +342,8 @@ namespace LuceneQueryToSql.Tests
         public void BuildBooleanQuery_TwoValidInputs_ValidSql()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
-            var sqlOutput = "({{COLUMN}} LIKE '%' + @field1 + '%') AND ({{COLUMN}} LIKE '%' + @field2 + '%')";
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
+            var sqlOutput = "(({{COLUMN}} LIKE '%' + @field1 + '%') AND ({{COLUMN}} LIKE '%' + @field2 + '%'))";
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("foo AND bar");
@@ -200,7 +356,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildBooleanQuery_TwoValidInputs_ValidNumParameters()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("foo AND bar");
@@ -213,7 +369,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildBooleanQuery_TwoValidInputs_ValidParameters()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("foo AND bar");
@@ -227,7 +383,7 @@ namespace LuceneQueryToSql.Tests
         public void BuildQuery_SqlWildcardInput_EscapedOutput()
         {
             // Arrange
-            var sqlQueryBuilder = new SqlQueryBuilder();
+            var sqlQueryBuilder = new SqlServerQueryBuilder();
             var luceneQuery = "\"5% of coders \\{\\{FOO\\}\\} are cod\\[ing\\] all_night_long\"";
             var sqlOutput = "5[%] OF CODERS [{][{]FOO}} ARE COD[[]ING] ALL[_]NIGHT[_]LONG";
             

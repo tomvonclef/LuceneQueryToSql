@@ -49,7 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlQueryBuilderTests.cs" />
+    <Compile Include="SqlServerFullTextQueryBuilderTests.cs" />
+    <Compile Include="SqlServerQueryBuilderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
