@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace LuceneQueryToSql.Tests
@@ -336,6 +337,70 @@ namespace LuceneQueryToSql.Tests
 
             // Assert
             Assert.AreEqual("FOO", parameterizedSql.UserInputVariables["field1"]);
+        }
+
+        [Test]
+        public void BuildBooleanSqlStatement_TwoValidInputs_ValidSql()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerFullTextQueryBuilder();
+
+            var sqlOutput =
+                   "SELECT \"id\", \"name\", \"desc\" \n" +
+                   "FROM \"table\" \n" +
+                   "WHERE " + 
+                   "(((CONTAINS(name, @field1)) AND (CONTAINS(name, @field2)))) OR " +
+                   "(((CONTAINS(desc, @field3)) AND (CONTAINS(desc, @field4))));";
+
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlStatement(
+                    "foo AND bar",
+                    new NotUserInputString("table"),
+                    new List<NotUserInputString>() { new NotUserInputString("name"), new NotUserInputString("desc") },
+                    new List<NotUserInputString>() { new NotUserInputString("id"), new NotUserInputString("name"),
+                                                new NotUserInputString("desc") });
+
+            // Assert
+            Assert.AreEqual(sqlOutput, parameterizedSql.Sql);
+        }
+
+        [Test]
+        public void BuildBooleanSqlStatement_TwoValidInputs_ValidNumParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerFullTextQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlStatement(
+                    "foo AND bar",
+                    new NotUserInputString("table"),
+                    new List<NotUserInputString>() { new NotUserInputString("name"), new NotUserInputString("desc") },
+                    new List<NotUserInputString>() { new NotUserInputString("id"), new NotUserInputString("name"),
+                                                new NotUserInputString("desc") });
+
+            // Assert
+            Assert.AreEqual(4, parameterizedSql.UserInputVariables.Count);
+        }
+
+        [Test]
+        public void BuildBooleanSqlStatement_TwoValidInputs_ValidParameters()
+        {
+            // Arrange
+            var sqlQueryBuilder = new SqlServerFullTextQueryBuilder();
+            
+            // Act
+            var parameterizedSql = sqlQueryBuilder.BuildSqlStatement(
+                    "foo AND bar",
+                    new NotUserInputString("table"),
+                    new List<NotUserInputString>() { new NotUserInputString("name"), new NotUserInputString("desc") },
+                    new List<NotUserInputString>() { new NotUserInputString("id"), new NotUserInputString("name"),
+                                                new NotUserInputString("desc") });
+
+            // Assert
+            Assert.AreEqual("FOO", parameterizedSql.UserInputVariables["field1"]);
+            Assert.AreEqual("BAR", parameterizedSql.UserInputVariables["field2"]);
+            Assert.AreEqual("FOO", parameterizedSql.UserInputVariables["field3"]);
+            Assert.AreEqual("BAR", parameterizedSql.UserInputVariables["field4"]);
         }
 
         [Test]

@@ -62,6 +62,29 @@ namespace LuceneQueryToSql
 
             return CombineParameterizedSql(parameterizedSqlObjs);
         }
+        public ParameterizedSql BuildSqlStatement(string luceneQuery, NotUserInputString table,
+                                                  IList<NotUserInputString> fieldsToSearch, 
+                                                  IList<NotUserInputString> fieldsToReturn)
+        {
+
+            // Escape double quotes, surround with double quotes
+            var trustedFieldsToSearch = fieldsToSearch
+                    .Select(f => "\"" + f.Str.Replace("\"", "\\\"") + "\"").ToList();
+
+            var trustedFieldsToReturn = fieldsToReturn
+                    .Select(f => "\"" + f.Str.Replace("\"", "\\\"") + "\"").ToList();
+
+            var trustedTable = "\"" + table.Str.Replace("\"", "\\\"") + "\"";
+
+            var sqlWhereClause = BuildSqlWhereClause(luceneQuery, trustedFieldsToSearch);
+
+            var returnSql =
+                   "SELECT " + string.Join(", ", trustedFieldsToReturn) + "\n" +
+                   "FROM " + trustedTable + "\n" +
+                   "WHERE " + sqlWhereClause.Sql + ";";
+
+            return new ParameterizedSql(returnSql, sqlWhereClause.UserInputVariables);
+        }
 
         private ParameterizedSql Build(Query query)
         {

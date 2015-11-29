@@ -57,6 +57,7 @@
     <Compile Include="QueryBuilder.cs" />
     <Compile Include="SqlServerFullTextQueryBuilder.cs" />
     <Compile Include="SqlServerQueryBuilder.cs" />
+    <Compile Include="NotUserInputString.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
