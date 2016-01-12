@@ -35,12 +35,12 @@ namespace LuceneQueryToSql
         protected override ParameterizedSql BuildQuery(WildcardQuery wildcardQuery)
         {
             var termText = EscapeForSql(wildcardQuery.Term.Text);
-            termText = termText.Replace("*", "%");
+            // termText = termText.Replace("*", "%");
             termText = termText.Replace("?", "_");
 
-            var userVariables = new Dictionary<string, string> {{"field1", termText}};
+            var userVariables = new Dictionary<string, string> {{"field1", "\"" + termText + "\""}};
 
-            var sql = "CONTAINS(" + FieldPlaceholder + ", \"@field1\")";
+            var sql = "CONTAINS(" + FieldPlaceholder + ", @field1)";
             return new ParameterizedSql(sql, userVariables);
         }
 

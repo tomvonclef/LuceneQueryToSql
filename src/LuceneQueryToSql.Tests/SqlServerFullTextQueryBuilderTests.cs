@@ -346,19 +346,17 @@ namespace LuceneQueryToSql.Tests
             var sqlQueryBuilder = new SqlServerFullTextQueryBuilder();
 
             var sqlOutput =
-                   "SELECT \"id\", \"name\", \"desc\" \n" +
-                   "FROM \"table\" \n" +
+                   "SELECT \"id\", \"name\", \"desc\"\n" +
+                   "FROM \"table\"\n" +
                    "WHERE " + 
-                   "(((CONTAINS(name, @field1)) AND (CONTAINS(name, @field2)))) OR " +
-                   "(((CONTAINS(desc, @field3)) AND (CONTAINS(desc, @field4))));";
+                   "(((CONTAINS(\"name\", @field1)) AND (CONTAINS(\"name\", @field2)))) OR " +
+                   "(((CONTAINS(\"desc\", @field3)) AND (CONTAINS(\"desc\", @field4))));";
 
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlStatement(
-                    "foo AND bar",
-                    new NotUserInputString("table"),
-                    new List<NotUserInputString>() { new NotUserInputString("name"), new NotUserInputString("desc") },
-                    new List<NotUserInputString>() { new NotUserInputString("id"), new NotUserInputString("name"),
-                                                new NotUserInputString("desc") });
+                    "foo AND bar", "table",
+                    new List<string>() { "name", "desc" },
+                    new List<string>() { "id", "name", "desc" });
 
             // Assert
             Assert.AreEqual(sqlOutput, parameterizedSql.Sql);
@@ -372,11 +370,9 @@ namespace LuceneQueryToSql.Tests
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlStatement(
-                    "foo AND bar",
-                    new NotUserInputString("table"),
-                    new List<NotUserInputString>() { new NotUserInputString("name"), new NotUserInputString("desc") },
-                    new List<NotUserInputString>() { new NotUserInputString("id"), new NotUserInputString("name"),
-                                                new NotUserInputString("desc") });
+                    "foo AND bar", "table",
+                    new List<string>() { "name", "desc" },
+                    new List<string>() { "id", "name", "desc" });
 
             // Assert
             Assert.AreEqual(4, parameterizedSql.UserInputVariables.Count);
@@ -390,11 +386,9 @@ namespace LuceneQueryToSql.Tests
             
             // Act
             var parameterizedSql = sqlQueryBuilder.BuildSqlStatement(
-                    "foo AND bar",
-                    new NotUserInputString("table"),
-                    new List<NotUserInputString>() { new NotUserInputString("name"), new NotUserInputString("desc") },
-                    new List<NotUserInputString>() { new NotUserInputString("id"), new NotUserInputString("name"),
-                                                new NotUserInputString("desc") });
+                    "foo AND bar", "table",
+                    new List<string>() { "name", "desc" },
+                    new List<string>() { "id", "name", "desc" });
 
             // Assert
             Assert.AreEqual("FOO", parameterizedSql.UserInputVariables["field1"]);
