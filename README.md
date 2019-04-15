@@ -12,7 +12,3 @@ LuceneQueryToSql is under development in Visual Studio 2015.
 
 This library was inspired by the blog post:
 https://dataworks-inc.com/lucene-query-syntax-for-sql/
-
-## Licence
-
-Copyright (c) 2015 Tom von Clef
