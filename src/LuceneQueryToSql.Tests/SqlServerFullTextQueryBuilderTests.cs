@@ -55,7 +55,7 @@ namespace LuceneQueryToSql.Tests
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc*");
 
             // Assert
-            Assert.AreEqual("CONTAINS({{COLUMN}}, \"@field1\")", parameterizedSql.Sql);
+            Assert.AreEqual("CONTAINS({{COLUMN}}, @field1)", parameterizedSql.Sql);
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace LuceneQueryToSql.Tests
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("abc*");
 
             // Assert
-            Assert.AreEqual("ABC%", parameterizedSql.UserInputVariables["field1"]);
+            Assert.AreEqual("\"ABC*\"", parameterizedSql.UserInputVariables["field1"]);
         }
 
 
@@ -134,7 +134,7 @@ namespace LuceneQueryToSql.Tests
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
 
             // Assert
-            Assert.AreEqual("CONTAINS({{COLUMN}}, \"@field1\")", parameterizedSql.Sql);
+            Assert.AreEqual("CONTAINS({{COLUMN}}, @field1)", parameterizedSql.Sql);
         }
 
         [Test]
@@ -160,7 +160,7 @@ namespace LuceneQueryToSql.Tests
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"Ab?Cd* dog\"");
 
             // Assert
-            Assert.AreEqual("CONTAINS({{COLUMN}}, \"@field1\")", parameterizedSql.Sql);
+            Assert.AreEqual("CONTAINS({{COLUMN}}, @field1)", parameterizedSql.Sql);
         }
 
         [Test]
@@ -186,7 +186,7 @@ namespace LuceneQueryToSql.Tests
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("\"Ab?Cd* dog\"");
 
             // Assert
-            Assert.AreEqual("AB_CD% DOG", parameterizedSql.UserInputVariables["field1"]);
+            Assert.AreEqual("\"AB_CD* DOG\"", parameterizedSql.UserInputVariables["field1"]);
         }
 
         [Test]
@@ -199,7 +199,7 @@ namespace LuceneQueryToSql.Tests
             var parameterizedSql = sqlQueryBuilder.BuildSqlWhereClause("Ab?Cd*");
 
             // Assert
-            Assert.AreEqual("AB_CD%", parameterizedSql.UserInputVariables["field1"]);
+            Assert.AreEqual("\"AB_CD*\"", parameterizedSql.UserInputVariables["field1"]);
         }
 
         [Test]
