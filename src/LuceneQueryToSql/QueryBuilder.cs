@@ -3,10 +3,9 @@ using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Globalization;
+using System.Text;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Lucene.Net.Index;
 
@@ -28,12 +27,14 @@ namespace LuceneQueryToSql
                 LowercaseExpandedTerms = false
             };
 
-            return Build(parser.Parse(luceneQuery.ToUpper()));
+            Query luceneQueryParsed = parser.Parse(luceneQuery.ToUpper());
+
+            return Build(luceneQueryParsed);
         }
 
         public ParameterizedSql BuildSqlWhereClause(string luceneQuery, IEnumerable<string> fields)
         {
-            var sqlWhereClause = BuildSqlWhereClause(luceneQuery);
+            ParameterizedSql sqlWhereClause = BuildSqlWhereClause(luceneQuery);
 
             var parameterizedSqlObjs = fields.Select(field => 
                                              new ParameterizedSql(sqlWhereClause.Sql.Replace(FieldPlaceholder, field), 
@@ -50,50 +51,37 @@ namespace LuceneQueryToSql
             // Escape double quotes, surround with double quotes
             var trustedFieldsToSearch = fieldsToSearch.Select(f => "\"" + f.Replace("\"", "\\\"") + "\"").ToList();
             var trustedFieldsToReturn = fieldsToReturn.Select(f => "\"" + f.Replace("\"", "\\\"") + "\"").ToList();
-            var trustedTable = "\"" + table.Replace("\"", "\\\"") + "\"";
+            string trustedTable = "\"" + table.Replace("\"", "\\\"") + "\"";
 
-            var sqlWhereClause = BuildSqlWhereClause(luceneQuery, trustedFieldsToSearch);
+            ParameterizedSql sqlWhereClause = BuildSqlWhereClause(luceneQuery, trustedFieldsToSearch);
 
-            var returnSql = "SELECT " + string.Join(", ", trustedFieldsToReturn) + "\n" +
-                            "FROM " + trustedTable + "\n" +
-                            "WHERE " + sqlWhereClause.Sql + ";";
+            string returnSql = "SELECT " + string.Join(", ", trustedFieldsToReturn) + "\n" +
+                               "FROM " + trustedTable + "\n" +
+                               "WHERE " + sqlWhereClause.Sql + ";";
 
             return new ParameterizedSql(returnSql, sqlWhereClause.UserInputVariables);
         }
 
         private ParameterizedSql Build(Query query)
         {
-            if (query is BooleanQuery)
+            switch (query)
             {
-                return BuildBoolean((BooleanQuery) query);
-            }
-            else if (query is FuzzyQuery)
-            {
-                return BuildFuzzy((FuzzyQuery) query);
-            }
-            else if (query is PhraseQuery)
-            {
-                return BuildPhrase((PhraseQuery) query);
-            }
-            else if (query is PrefixQuery)
-            {
-                return BuildPrefix((PrefixQuery) query);
-            }
-            else if (query is TermQuery)
-            {
-                return BuildTerm((TermQuery) query);
-            }
-            else if (query is TermRangeQuery)
-            {
-                return BuildTermRange((TermRangeQuery) query);
-            }
-            else if (query is WildcardQuery)
-            {
-                return BuildWildcard((WildcardQuery) query);
-            }
-            else
-            {
-                throw new Exception("Invalid Build object.");
+                case BooleanQuery booleanQuery:
+                    return BuildBoolean(booleanQuery);
+                case FuzzyQuery fuzzyQuery:
+                    return BuildFuzzy(fuzzyQuery);
+                case PhraseQuery phraseQuery:
+                    return BuildPhrase(phraseQuery);
+                case PrefixQuery prefixQuery:
+                    return BuildPrefix(prefixQuery);
+                case TermQuery termQuery:
+                    return BuildTerm(termQuery);
+                case TermRangeQuery rangeQuery:
+                    return BuildTermRange(rangeQuery);
+                case WildcardQuery wildcardQuery:
+                    return BuildWildcard(wildcardQuery);
+                default:
+                    throw new Exception("Invalid Build object.");
             }
         }
 
@@ -105,14 +93,14 @@ namespace LuceneQueryToSql
 
         protected abstract ParameterizedSql BuildQuery(WildcardQuery query);
 
-        private ParameterizedSql CombineParameterizedSql(IList<ParameterizedSql> parameterizedSqlObjs)
+        private static ParameterizedSql CombineParameterizedSql(IList<ParameterizedSql> parameterizedSqlObjs)
         {
             var queryStringBuilder = new StringBuilder();
             var segmentsAdded = 0;
             var currentParamNumber = 1;
             var combinedUserInputVariables = new Dictionary<string, string>();
 
-            foreach (var parameterizedSql in parameterizedSqlObjs)
+            foreach (ParameterizedSql parameterizedSql in parameterizedSqlObjs)
             {
                 if (parameterizedSql.Sql == null || parameterizedSql.UserInputVariables == null)
                 {
@@ -124,7 +112,7 @@ namespace LuceneQueryToSql
                     queryStringBuilder.Append(" OR ");
                 }
 
-                var sqlToAppend = parameterizedSql.Sql;
+                string sqlToAppend = parameterizedSql.Sql;
 
                 // All sub-query sql contains parameters starting with "field1", "field2", etc and 
                 // are here given unique names ("field5", "field6", etc.).
@@ -161,7 +149,7 @@ namespace LuceneQueryToSql
 
             var clauses = new List<BooleanClause>();
 
-            var areMustClauses = booleanQuery.GetClauses().Any(c => c.Occur == Occur.MUST);
+            bool areMustClauses = booleanQuery.GetClauses().Any(c => c.Occur == Occur.MUST);
 
             clauses.AddRange(booleanQuery.GetClauses().Where(c => c.Occur == Occur.MUST).ToList());
 
@@ -174,13 +162,12 @@ namespace LuceneQueryToSql
 
             clauses.AddRange(booleanQuery.GetClauses().Where(c => c.Occur == Occur.MUST_NOT).ToList());
 
-            foreach (var clause in clauses)
+            foreach (BooleanClause clause in clauses)
             {
-                var subQuery = Build(clause.Query);
+                ParameterizedSql subQuery = Build(clause.Query);
 
-                if (subQuery == null || subQuery.Sql == null) continue;
+                if (subQuery?.Sql == null) continue;
 
-                
                 if (currentOccur == null) // if first clause
                 {
                     queryStringBuilder.Append("(");
@@ -215,7 +202,7 @@ namespace LuceneQueryToSql
                     queryStringBuilder.Append("NOT ");
                 }
 
-                var sqlToAppend = subQuery.Sql;
+                string sqlToAppend = subQuery.Sql;
 
                 // All sub-query sql contains parameters starting with "field1", "field2", etc and 
                 // are here given unique names ("field5", "field6", etc.).
@@ -224,7 +211,7 @@ namespace LuceneQueryToSql
                 if (subQuery.UserInputVariables.Count > 0)
                 {
                     int numUserInputVariables = subQuery.UserInputVariables.Count;
-                    var param = currentParamNumber;
+                    int param = currentParamNumber;
 
                     for (var i = 1; i <= numUserInputVariables; i++)
                     {
@@ -234,7 +221,7 @@ namespace LuceneQueryToSql
                     }
 
                     param = currentParamNumber;
-                    for (var i = numUserInputVariables; i > 0; i--)
+                    for (int i = numUserInputVariables; i > 0; i--)
                     {
                         sqlToAppend = Regex.Replace(sqlToAppend, 
                                                     "@field" + i + "([^0-9])",
@@ -262,21 +249,16 @@ namespace LuceneQueryToSql
         private ParameterizedSql BuildFuzzy(FuzzyQuery fuzzyQuery)
         {
             Term term = CopyTerm(fuzzyQuery.Term);
-            if (term != null)
-            {
-                return BuildQuery(new FuzzyQuery(term, fuzzyQuery.MinSimilarity, fuzzyQuery.PrefixLength));
-            }
-
-            return null;
+            return term == null ? null : BuildQuery(new FuzzyQuery(term, fuzzyQuery.MinSimilarity, fuzzyQuery.PrefixLength));
         }
 
         private ParameterizedSql BuildPhrase(PhraseQuery phraseQuery)
         {
-            var termsAdded = 0;
-            var field = "";
+            int termsAdded = 0;
+            string field = "";
             var queryStringBuilder = new StringBuilder();
 
-            foreach (var term in phraseQuery.GetTerms())
+            foreach (Term term in phraseQuery.GetTerms())
             {
                 if (termsAdded == 0)
                 {
@@ -293,7 +275,7 @@ namespace LuceneQueryToSql
             }
 
             Query query;
-            var queryString = queryStringBuilder.ToString();
+            string queryString = queryStringBuilder.ToString();
 
             if (queryString.Contains("?") || queryString.Contains("*"))
             {
@@ -310,23 +292,13 @@ namespace LuceneQueryToSql
         private ParameterizedSql BuildPrefix(PrefixQuery prefixQuery)
         {
             string field = prefixQuery.Prefix.Field;
-            if (field != null)
-            {
-                return BuildQuery(new WildcardQuery(new Term(field, prefixQuery.Prefix.Text + "*")));
-            }
-
-            return null;
+            return field == null ? null : BuildQuery(new WildcardQuery(new Term(field, prefixQuery.Prefix.Text + "*")));
         }
 
         private ParameterizedSql BuildTerm(TermQuery termQuery)
         {
             Term term = CopyTerm(termQuery.Term);
-            if (term != null)
-            {
-                return BuildQuery(new TermQuery(term));
-            }
-
-            return null;
+            return term == null ? null : BuildQuery(new TermQuery(term));
         }
 
         private ParameterizedSql BuildTermRange(TermRangeQuery termRangeQuery)
@@ -345,22 +317,12 @@ namespace LuceneQueryToSql
         private ParameterizedSql BuildWildcard(WildcardQuery wildcardQuery)
         {
             Term term = CopyTerm(wildcardQuery.Term);
-            if (term != null)
-            {
-                return BuildQuery(new WildcardQuery(term));
-            }
-
-            return null;
+            return term == null ? null : BuildQuery(new WildcardQuery(term));
         }
 
-        private Term CopyTerm(Term term)
+        private static Term CopyTerm(Term term)
         {
-            if (term.Field != null)
-            {
-                return new Term(term.Field, term.Text);
-            }
-
-            return null;
+            return term.Field == null ? null : new Term(term.Field, term.Text);
         }
 
         private DateTime? ParseDate(string str)
